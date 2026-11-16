@@ -6,23 +6,40 @@
 <style>
 *{margin:0;box-sizing:border-box}
 html,body{height:100%}
-body{background:#05080f;overflow:hidden;display:flex;align-items:center;justify-content:center}
+body{background:#05080f;overflow:hidden;display:flex;align-items:center;justify-content:center;
+ font-family:"Helvetica Neue",Arial,sans-serif}
 .tv{position:relative;width:100vw;height:100vh;background:#05080f;overflow:hidden}
-#static{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}
+#static{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;z-index:2}
+/* Please Stand By card */
+#card{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;opacity:0}
+#card.show{opacity:1;transition:opacity .25s}
+.bars{flex:1;display:flex}
+.bars span{flex:1}
+.bars .w{background:#c0c0c0}.bars .y{background:#c0c000}.bars .c{background:#00c0c0}
+.bars .g{background:#00c000}.bars .m{background:#c000c0}.bars .r{background:#c00000}.bars .b{background:#0000c0}
+.band{background:#000;color:#eee;display:flex;align-items:center;justify-content:center;
+ height:30%;letter-spacing:.3em;text-transform:uppercase}
+.band b{font-weight:800;font-size:clamp(22px,6vw,64px);text-shadow:0 2px 0 #000}
+.sub{position:absolute;bottom:6%;left:0;right:0;text-align:center;color:#eee;
+ font-size:clamp(10px,2vw,15px);letter-spacing:.24em;text-transform:uppercase;opacity:.8}
 .roll{position:absolute;left:0;right:0;height:16%;top:-20%;z-index:4;
  background:linear-gradient(#ffffff55,#ffffff00);mix-blend-mode:overlay;animation:roll .5s linear infinite}
 .scan{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.22;
  background:repeating-linear-gradient(#0000 0 2px,#0007 2px 3px)}
-.vig{position:absolute;inset:0;z-index:6;pointer-events:none;
- box-shadow:inset 0 0 140px 30px #000c;border-radius:10px}
+.vig{position:absolute;inset:0;z-index:6;pointer-events:none;box-shadow:inset 0 0 140px 30px #000c;border-radius:10px}
 @keyframes roll{to{top:120%}}
-/* hidden accessibility fallback; no visible text */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-@media(prefers-reduced-motion:reduce){#static,.roll,.scan{display:none}}
+@media(prefers-reduced-motion:reduce){#static,.roll,.scan{display:none}#card{opacity:1}}
 </style></head>
 <body>
 <div class="tv">
  <canvas id="static"></canvas>
+ <div id="card">
+   <div class="bars"><span class="w"></span><span class="y"></span><span class="c"></span><span class="g"></span><span class="m"></span><span class="r"></span><span class="b"></span></div>
+   <div class="band"><b>Please Stand By</b></div>
+   <div class="bars"><span class="b"></span><span class="r"></span><span class="m"></span><span class="g"></span><span class="c"></span><span class="y"></span><span class="w"></span></div>
+   <div class="sub">The Guitar Doug Report</div>
+ </div>
  <div class="roll"></div>
  <div class="scan"></div>
  <div class="vig"></div>
@@ -44,33 +61,34 @@ body{background:#05080f;overflow:hidden;display:flex;align-items:center;justify-
    if(running)raf=requestAnimationFrame(draw);
  }
  draw();
- // soft TV-static hiss, where the browser allows sound (most block autoplay until a click)
- var actx,src,gain;
- function hiss(){
-   try{
-     var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
-     if(!actx)actx=new AC();
-     var sec=3,buf=actx.createBuffer(1,actx.sampleRate*sec,actx.sampleRate),ch=buf.getChannelData(0),i;
-     for(i=0;i<ch.length;i++)ch[i]=(Math.random()*2-1)*0.6;
-     src=actx.createBufferSource();src.buffer=buf;
-     var lp=actx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=4200;
-     gain=actx.createGain();gain.gain.value=0.06; // quiet on purpose
-     src.connect(lp);lp.connect(gain);gain.connect(actx.destination);
-     gain.gain.setValueAtTime(0.06,actx.currentTime+2.6);
-     gain.gain.linearRampToValueAtTime(0,actx.currentTime+3.0);
-     src.start();
-     if(actx.state==="suspended")actx.resume();
-   }catch(e){}
- }
+ // ---- sound: static hiss, then a soft stand-by test tone (where the browser allows it) ----
+ var actx,gain;
+ function audioOn(){try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!actx)actx=new AC();
+   if(actx.state==="suspended")actx.resume();}catch(e){}}
+ function hiss(){try{audioOn();if(!actx)return;
+   var buf=actx.createBuffer(1,actx.sampleRate*2,actx.sampleRate),ch=buf.getChannelData(0),i;
+   for(i=0;i<ch.length;i++)ch[i]=(Math.random()*2-1)*0.6;
+   var s=actx.createBufferSource();s.buffer=buf;
+   var lp=actx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=4200;
+   gain=actx.createGain();gain.gain.value=0.06;
+   s.connect(lp);lp.connect(gain);gain.connect(actx.destination);
+   gain.gain.setValueAtTime(0.06,actx.currentTime+1.7);
+   gain.gain.linearRampToValueAtTime(0,actx.currentTime+2.0);
+   s.start();}catch(e){}}
+ function tone(){try{audioOn();if(!actx)return;
+   var o=actx.createOscillator(),g=actx.createGain();o.type="sine";o.frequency.value=1000;
+   g.gain.value=0;o.connect(g);g.connect(actx.destination);
+   g.gain.linearRampToValueAtTime(0.04,actx.currentTime+0.05);
+   g.gain.setValueAtTime(0.04,actx.currentTime+1.1);
+   g.gain.linearRampToValueAtTime(0,actx.currentTime+1.3);
+   o.start();o.stop(actx.currentTime+1.35);}catch(e){}}
  hiss();
- // if the browser blocked autoplay, start the hiss on the first touch/click
- function unlock(){if(actx&&actx.state==="suspended")actx.resume();else if(!actx)hiss();
-   removeEventListener("pointerdown",unlock);removeEventListener("keydown",unlock);}
+ function unlock(){audioOn();removeEventListener("pointerdown",unlock);removeEventListener("keydown",unlock);}
  addEventListener("pointerdown",unlock);addEventListener("keydown",unlock);
- // broken-TV static for ~3s, then hand off to the same path on the new site
+ // ---- timeline: static ~2s -> Please Stand By ~1.6s -> handoff ----
  setTimeout(function(){running=false;cancelAnimationFrame(raf);
-   try{if(gain)gain.gain.value=0;if(actx)actx.close();}catch(e){}
-   location.replace(dest);},3000);
+   cv.style.display="none";document.getElementById("card").classList.add("show");tone();},2000);
+ setTimeout(function(){try{if(actx)actx.close();}catch(e){}location.replace(dest);},3600);
 }());
 </script>
 </body></html>
