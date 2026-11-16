@@ -44,8 +44,33 @@ body{background:#05080f;overflow:hidden;display:flex;align-items:center;justify-
    if(running)raf=requestAnimationFrame(draw);
  }
  draw();
+ // soft TV-static hiss, where the browser allows sound (most block autoplay until a click)
+ var actx,src,gain;
+ function hiss(){
+   try{
+     var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+     if(!actx)actx=new AC();
+     var sec=3,buf=actx.createBuffer(1,actx.sampleRate*sec,actx.sampleRate),ch=buf.getChannelData(0),i;
+     for(i=0;i<ch.length;i++)ch[i]=(Math.random()*2-1)*0.6;
+     src=actx.createBufferSource();src.buffer=buf;
+     var lp=actx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=4200;
+     gain=actx.createGain();gain.gain.value=0.06; // quiet on purpose
+     src.connect(lp);lp.connect(gain);gain.connect(actx.destination);
+     gain.gain.setValueAtTime(0.06,actx.currentTime+2.6);
+     gain.gain.linearRampToValueAtTime(0,actx.currentTime+3.0);
+     src.start();
+     if(actx.state==="suspended")actx.resume();
+   }catch(e){}
+ }
+ hiss();
+ // if the browser blocked autoplay, start the hiss on the first touch/click
+ function unlock(){if(actx&&actx.state==="suspended")actx.resume();else if(!actx)hiss();
+   removeEventListener("pointerdown",unlock);removeEventListener("keydown",unlock);}
+ addEventListener("pointerdown",unlock);addEventListener("keydown",unlock);
  // broken-TV static for ~3s, then hand off to the same path on the new site
- setTimeout(function(){running=false;cancelAnimationFrame(raf);location.replace(dest);},3000);
+ setTimeout(function(){running=false;cancelAnimationFrame(raf);
+   try{if(gain)gain.gain.value=0;if(actx)actx.close();}catch(e){}
+   location.replace(dest);},3000);
 }());
 </script>
 </body></html>
