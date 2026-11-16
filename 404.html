@@ -3,92 +3,102 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://theguitardougreport.com/">
+<meta http-equiv="refresh" content="4; url=https://theguitardougreport.com/">
 <style>
 *{margin:0;box-sizing:border-box}
 html,body{height:100%}
-body{background:#05080f;overflow:hidden;display:flex;align-items:center;justify-content:center;
- font-family:"Helvetica Neue",Arial,sans-serif}
-.tv{position:relative;width:100vw;height:100vh;background:#05080f;overflow:hidden}
-#static{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;z-index:2}
-/* Please Stand By card */
-#card{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;opacity:0}
-#card.show{opacity:1;transition:opacity .25s}
-.bars{flex:1;display:flex}
-.bars span{flex:1}
-.bars .w{background:#c0c0c0}.bars .y{background:#c0c000}.bars .c{background:#00c0c0}
-.bars .g{background:#00c000}.bars .m{background:#c000c0}.bars .r{background:#c00000}.bars .b{background:#0000c0}
-.band{background:#000;color:#eee;display:flex;align-items:center;justify-content:center;
- height:30%;letter-spacing:.3em;text-transform:uppercase}
-.band b{font-weight:800;font-size:clamp(22px,6vw,64px);text-shadow:0 2px 0 #000}
-.sub{position:absolute;bottom:6%;left:0;right:0;text-align:center;color:#eee;
- font-size:clamp(10px,2vw,15px);letter-spacing:.24em;text-transform:uppercase;opacity:.8}
-.roll{position:absolute;left:0;right:0;height:16%;top:-20%;z-index:4;
- background:linear-gradient(#ffffff55,#ffffff00);mix-blend-mode:overlay;animation:roll .5s linear infinite}
-.scan{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.22;
- background:repeating-linear-gradient(#0000 0 2px,#0007 2px 3px)}
-.vig{position:absolute;inset:0;z-index:6;pointer-events:none;box-shadow:inset 0 0 140px 30px #000c;border-radius:10px}
+body{background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;
+ font-family:"Bodoni 72",Didot,Georgia,"Times New Roman",serif}
+.tv{position:relative;width:100vw;height:100vh;background:#000;overflow:hidden;border-radius:3vmin/2vmin}
+/* CRT curvature + phosphor glow */
+.crt{position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:3vmin/2vmin;
+ box-shadow:inset 0 0 18vmin 4vmin #000f, inset 0 0 2vmin #0006;
+ background:radial-gradient(130% 130% at 50% 50%, #0000 60%, #000b 100%)}
+.crt::after{content:"";position:absolute;inset:0;background:radial-gradient(100% 60% at 50% 42%,#1fff0010,#0000 60%);mix-blend-mode:screen}
+/* the "signal" — what the set tunes into */
+#scene{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;
+ background:#05080f;filter:contrast(.5) brightness(1.4) saturate(.3) blur(3px);opacity:0}
+#scene.tuned{filter:none;transition:filter 1s ease-out}
+#cover{position:absolute;inset:0;background:#05080f center/contain no-repeat;opacity:0}
+#mast{display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;padding:24px;text-align:center}
+#mast .k{font:800 clamp(11px,2.3vw,20px) "Helvetica Neue",Arial,sans-serif;letter-spacing:.34em;text-transform:uppercase;color:#DEB44C}
+#mast .b{font-weight:700;font-size:clamp(28px,8vw,96px);letter-spacing:.03em;text-transform:uppercase;color:#FAF7EE;line-height:1}
+/* broken-tube overlays */
+.veil{position:absolute;inset:0;z-index:2;background:#000;opacity:1;animation:safe .1s linear 3.6s forwards}
+#tvcv{position:absolute;inset:0;width:100%;height:100%;z-index:3;image-rendering:pixelated;opacity:1;animation:safe .1s linear 3.6s forwards}
+@keyframes safe{to{opacity:0;visibility:hidden}}
+.roll{position:absolute;left:0;right:0;z-index:4;height:16%;top:-20%;background:linear-gradient(#ffffff55,#ffffff00);mix-blend-mode:overlay;opacity:0}
+.scan{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.26;background:repeating-linear-gradient(#0000 0 2px,#00000088 2px 3px)}
+.vig{position:absolute;inset:0;z-index:6;pointer-events:none;box-shadow:inset 0 0 160px 40px #000d;border-radius:12px}
 @keyframes roll{to{top:120%}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-@media(prefers-reduced-motion:reduce){#static,.roll,.scan{display:none}#card{opacity:1}}
+@media(prefers-reduced-motion:reduce){#tvcv,.roll,.scan{display:none}#veil{opacity:0}#scene{opacity:1;filter:none}}
 </style></head>
 <body>
 <div class="tv">
- <canvas id="static"></canvas>
- <div id="card">
-   <div class="bars"><span class="w"></span><span class="y"></span><span class="c"></span><span class="g"></span><span class="m"></span><span class="r"></span><span class="b"></span></div>
-   <div class="band"><b>Please Stand By</b></div>
-   <div class="bars"><span class="b"></span><span class="r"></span><span class="m"></span><span class="g"></span><span class="c"></span><span class="y"></span><span class="w"></span></div>
-   <div class="sub">The Guitar Doug Report</div>
+ <div id="scene">
+   <div id="cover"></div>
+   <div id="mast"><span class="k">Seattle&nbsp;&nbsp;·&nbsp;&nbsp;Now At</span><span class="b">The Guitar<br>Doug Report</span></div>
  </div>
- <div class="roll"></div>
+ <canvas id="tvcv"></canvas>
+ <div class="veil" id="veil"></div>
+ <div class="roll" id="roll"></div>
  <div class="scan"></div>
  <div class="vig"></div>
+ <div class="crt"></div>
  <a class="sr" href="https://theguitardougreport.com/">The Guitar Doug Report</a>
  <noscript><a class="sr" href="https://theguitardougreport.com/">Continue</a></noscript>
+ <!-- drop the old cover in the repo as cover.jpg and it joins the gag automatically -->
+ <img alt="" src="cover.jpg" style="display:none" onload="window.__cover=this.src" onerror="window.__cover=0">
 </div>
 <script>
 (function(){
  var dest="https://theguitardougreport.com"+location.pathname+location.search+location.hash;
  var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
  if(reduce){location.replace(dest);return;}
- var cv=document.getElementById("static"),ctx=cv.getContext("2d"),raf,running=true;
- function size(){cv.width=Math.max(2,(innerWidth/3)|0);cv.height=Math.max(2,(innerHeight/3)|0);}
+ var cv=document.getElementById("tvcv"),ctx=cv.getContext("2d"),raf,running=true;
+ var scene=document.getElementById("scene"),cover=document.getElementById("cover"),
+     mast=document.getElementById("mast"),veil=document.getElementById("veil"),roll=document.getElementById("roll");
+ function size(){cv.width=Math.max(2,(innerWidth/3)|0);cv.height=Math.max(2,(innerHeight/3)|0)}
  size();addEventListener("resize",size);
- function draw(){
-   var w=cv.width,h=cv.height,img=ctx.createImageData(w,h),d=img.data,i,v;
-   for(i=0;i<d.length;i+=4){v=Math.random()*255|0;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}
-   ctx.putImageData(img,0,0);
-   if(running)raf=requestAnimationFrame(draw);
- }
+ function draw(){var w=cv.width,h=cv.height,im=ctx.createImageData(w,h),d=im.data,i,v;
+  for(i=0;i<d.length;i+=4){v=Math.random()*255|0;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
+  ctx.putImageData(im,0,0);if(running)raf=requestAnimationFrame(draw)}
  draw();
- // ---- sound: static hiss, then a soft stand-by test tone (where the browser allows it) ----
- var actx,gain;
- function audioOn(){try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!actx)actx=new AC();
-   if(actx.state==="suspended")actx.resume();}catch(e){}}
- function hiss(){try{audioOn();if(!actx)return;
-   var buf=actx.createBuffer(1,actx.sampleRate*2,actx.sampleRate),ch=buf.getChannelData(0),i;
-   for(i=0;i<ch.length;i++)ch[i]=(Math.random()*2-1)*0.6;
-   var s=actx.createBufferSource();s.buffer=buf;
-   var lp=actx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=4200;
-   gain=actx.createGain();gain.gain.value=0.06;
-   s.connect(lp);lp.connect(gain);gain.connect(actx.destination);
-   gain.gain.setValueAtTime(0.06,actx.currentTime+1.7);
-   gain.gain.linearRampToValueAtTime(0,actx.currentTime+2.0);
-   s.start();}catch(e){}}
- function tone(){try{audioOn();if(!actx)return;
-   var o=actx.createOscillator(),g=actx.createGain();o.type="sine";o.frequency.value=1000;
-   g.gain.value=0;o.connect(g);g.connect(actx.destination);
-   g.gain.linearRampToValueAtTime(0.04,actx.currentTime+0.05);
-   g.gain.setValueAtTime(0.04,actx.currentTime+1.1);
-   g.gain.linearRampToValueAtTime(0,actx.currentTime+1.3);
-   o.start();o.stop(actx.currentTime+1.35);}catch(e){}}
- hiss();
- function unlock(){audioOn();removeEventListener("pointerdown",unlock);removeEventListener("keydown",unlock);}
- addEventListener("pointerdown",unlock);addEventListener("keydown",unlock);
- // ---- timeline: static ~2s -> Please Stand By ~1.6s -> handoff ----
- setTimeout(function(){running=false;cancelAnimationFrame(raf);
-   cv.style.display="none";document.getElementById("card").classList.add("show");tone();},2000);
- setTimeout(function(){try{if(actx)actx.close();}catch(e){}location.replace(dest);},3600);
+ function snow(o){cv.style.transition="opacity .25s";cv.style.opacity=o}
+ function veilO(o){veil.style.transition="opacity .3s";veil.style.opacity=o}
+ function rollOn(on){roll.style.opacity=on?".5":"0";roll.style.animation=on?"roll .4s linear infinite":"none"}
+ // soft hiss that fades as it locks in (where the browser allows sound)
+ var actx,g;try{var AC=window.AudioContext||window.webkitAudioContext;if(AC){actx=new AC();
+   var buf=actx.createBuffer(1,actx.sampleRate*3,actx.sampleRate),ch=buf.getChannelData(0),j;
+   for(j=0;j<ch.length;j++)ch[j]=(Math.random()*2-1)*0.5;
+   var s=actx.createBufferSource();s.buffer=buf;var lp=actx.createBiquadFilter();lp.type="lowpass";lp.frequency.value=4600;
+   g=actx.createGain();g.gain.value=0.05;s.connect(lp);lp.connect(g);g.connect(actx.destination);
+   g.gain.setValueAtTime(0.05,actx.currentTime+1.9);g.gain.linearRampToValueAtTime(0,actx.currentTime+2.7);
+   s.start();if(actx.state==="suspended")actx.resume();}}catch(e){}
+ function unlock(){try{if(actx&&actx.state==="suspended")actx.resume()}catch(e){}
+   removeEventListener("pointerdown",unlock)}addEventListener("pointerdown",unlock);
+ var haveCover=function(){return window.__cover&&window.__cover!==0;};
+ // ---- timeline (snappy; nothing held long) ----
+ veilO(1);snow(1);rollOn(true);                                   // full static
+ setTimeout(function(){                                           // ~0.5s: ghost the old cover through heavy snow (the nod)
+   if(haveCover()){cover.style.backgroundImage="url('"+window.__cover+"')";
+     scene.style.opacity="1";cover.style.opacity="1";veilO(.15);snow(.72)}
+ },500);
+ setTimeout(function(){                                           // ~1.1s: roll back to full static
+   cover.style.opacity="0";scene.style.opacity="0";veilO(1);snow(1)
+ },1100);
+ setTimeout(function(){                                           // ~1.5s: tune IN to Guitar Doug — rough first
+   cover.style.opacity="0";mast.style.opacity="1";scene.style.opacity="1";
+   veilO(.1);snow(.6);rollOn(true)
+ },1500);
+ setTimeout(function(){                                           // ~1.9s: lock the signal — sharpen to crystal clear
+   scene.classList.add("tuned");veilO(0);snow(0);rollOn(false)
+ },1900);
+ setTimeout(function(){                                           // hold the clean frame a beat, then hand off
+   running=false;cancelAnimationFrame(raf);try{if(actx)actx.close()}catch(e){}
+   location.replace(dest)
+ },3300);
 }());
 </script>
 </body></html>
