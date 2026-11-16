@@ -38,7 +38,6 @@ body{background:#000;overflow:hidden;display:flex;align-items:center;justify-con
 <div class="tv">
  <div id="scene">
    <div id="cover"></div>
-   <div id="mast"><span class="k">Seattle&nbsp;&nbsp;·&nbsp;&nbsp;Now At</span><span class="b">The Guitar<br>Doug Report</span></div>
  </div>
  <canvas id="tvcv"></canvas>
  <div class="veil" id="veil"></div>
@@ -58,7 +57,7 @@ body{background:#000;overflow:hidden;display:flex;align-items:center;justify-con
  if(reduce){location.replace(dest);return;}
  var cv=document.getElementById("tvcv"),ctx=cv.getContext("2d"),raf,running=true;
  var scene=document.getElementById("scene"),cover=document.getElementById("cover"),
-     mast=document.getElementById("mast"),veil=document.getElementById("veil"),roll=document.getElementById("roll");
+     veil=document.getElementById("veil"),roll=document.getElementById("roll");
  function size(){cv.width=Math.max(2,(innerWidth/3)|0);cv.height=Math.max(2,(innerHeight/3)|0)}
  size();addEventListener("resize",size);
  function draw(){var w=cv.width,h=cv.height,im=ctx.createImageData(w,h),d=im.data,i,v;
@@ -88,17 +87,14 @@ body{background:#000;overflow:hidden;display:flex;align-items:center;justify-con
  setTimeout(function(){                                           // ~1.35s: signal lost, roll back to full static
    cover.style.opacity="0";scene.style.opacity="0";veilO(1);snow(1)
  },1350);
- setTimeout(function(){                                           // ~1.7s: tune IN to Guitar Doug — rough first
-   cover.style.opacity="0";mast.style.opacity="1";scene.style.opacity="1";
-   veilO(.08);snow(.5);rollOn(true)
- },1700);
- setTimeout(function(){                                           // ~2.1s: lock the signal — sharpen to crystal clear
-   scene.classList.add("tuned");veilO(0);snow(0);rollOn(false)
- },2100);
- setTimeout(function(){                                           // hold the clean frame a beat, then hand off
+ setTimeout(function(){rollOn(true);snow(.7)},1750);              // ~1.75s: the set hunts for the signal
+ setTimeout(function(){                                           // ~2.15s: signal locks — static clears to the live site
+   veilO(0);snow(0);rollOn(false)
+ },2150);
+ setTimeout(function(){                                           // hand off the moment it's clear
    running=false;cancelAnimationFrame(raf);try{if(actx)actx.close()}catch(e){}
    location.replace(dest)
- },3450);
+ },2450);
 }());
 </script>
 </body></html>
